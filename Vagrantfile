@@ -1,14 +1,18 @@
-Vagrant::Config.run do |config|
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
   config.vm.host_name = 'solr'
 
   # the base box this environment is built off of
-  config.vm.box = 'precise32'
+  config.vm.box = 'precise'
 
   # the url from where to fetch the base box if it doesn't exist
-  config.vm.box_url = 'http://files.vagrantup.com/precise32.box'
+  config.vm.box_url = 'http://files.vagrantup.com/precise64.box'
 
   # attach network adapters
-  config.vm.network :hostonly, '33.33.33.20', {:adapter => 2}
+  
+  config.vm.network "private_network", ip: '192.168.3.10'
 
   # use puppet to provision packages, set a fact to indicate which contrib
   # module to support
@@ -20,6 +24,13 @@ Vagrant::Config.run do |config|
       puppet.module_path = 'puppet/modules'
       puppet.facter = {'drupalsolrmodule' => 'search_api'}
     end
+  end
+
+  config.vm.provider "virtualbox" do |v|
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    v.customize ["modifyvm", :id, "--cpus", "2"]
+    v.customize ["modifyvm", :id, "--memory", "1024"]
   end
 
   config.vm.define :apachesolr do |apachesolr|
